@@ -16,4 +16,7 @@ export class ItemsComponent implements OnInit {
       this.items = items;
     });
   }
+  deleteItem(e, item) {
+    this.itemSrvc.deleteItem(item);
+  }
 }

@@ -10,12 +10,32 @@ import { Observable } from 'rxjs/Observable';
 export class ItemService {
   itemsCollection: AngularFirestoreCollection<Item>;
   items: Observable<Item[]>;
+  itemDoc: AngularFirestoreDocument<Item>;
 
   constructor(public afs: AngularFirestore) {
-    this.items = this.afs.collection('items').valueChanges();
+    // this.items = this.afs.collection('items').valueChanges();
+    this.itemsCollection = this.afs.collection('items', ref =>
+      ref.orderBy('title', 'asc')
+    );
+    this.items = this.itemsCollection.snapshotChanges().map(changes => {
+      return changes.map(change => {
+        const data = change.payload.doc.data() as Item;
+        data.id = change.payload.doc.id;
+        return data;
+      });
+    });
   }
 
   getItems() {
     return this.items;
+  }
+
+  addItem(item: Item) {
+    this.itemsCollection.add(item);
+  }
+
+  deleteItem(item: Item) {
+    this.itemDoc = this.afs.doc(`items/${item.id}`);
+    this.itemDoc.delete();
   }
 }
